@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Aki Chat Rooms</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f5f5f5; }
+    #log { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; background: white; }
+    .msg { margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+
+<h1>Aki Chat Rooms</h1>
+
+<!-- 合言葉（部屋名）入力 -->
+<div id="room-screen">
+  <h2>好きな合言葉（部屋名）を入力</h2>
+  <input id="roomkey" placeholder="例：neko / 1234 / akichat"><br><br>
+  <button onclick="enterRoom()">入室する</button>
+</div>
+
+<!-- チャット画面 -->
+<div id="chat-screen" style="display:none;">
+  <h2 id="room-title"></h2>
+  <div id="log"></div>
+  <br>
+  <input id="name" placeholder="名前"><br><br>
+  <input id="text" placeholder="メッセージ" style="width:300px;">
+  <button onclick="send()">送信</button>
+</div>
+
+<script>
+  let ROOM = ""; // 選ばれた部屋名
+
+  function enterRoom() {
+    ROOM = document.getElementById("roomkey").value;
+    if (!ROOM) return alert("合言葉を入力してね");
+
+    document.getElementById("room-screen").style.display = "none";
+    document.getElementById("chat-screen").style.display = "block";
+    document.getElementById("room-title").textContent = "部屋: " + ROOM;
+
+    load();
+    subscribe();
+  }
+
+  // ★ Supabase 接続（あきのプロジェクト）
+  const supabase = supabase.createClient(
+    "https://uxyywwdjctddiuthzlad.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4eXl3d2RqY3RkZGl1dGh6bGFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYzNzE5ODQsImV4cCI6MjEwMTk0Nzk4NH0.dNcQwq7pam-mFixwhKOyZxao_vYdRrpR5PUhYAJFDCY"
+  );
+
+  // メッセージ送信
+  async function send() {
+    const user = document.getElementById("name").value;
+    const text = document.getElementById("text").value;
+    if (!user || !text) return;
+
+    await supabase.from("messages").insert({ user, text, room: ROOM });
+    document.getElementById("text").value = "";
+  }
+
+  // 初期読み込み（部屋ごと）
+  async function load() {
+    const { data } = await supabase
+      .from("messages")
+      .select("*")
+      .eq("room", ROOM)
+      .order("id");
+
+    data.forEach(addMessage);
+  }
+
+  // 表示
+  function addMessage(msg) {
+    const log = document.getElementById("log");
+    const div = document.createElement("div");
+    div.className = "msg";
+    div.textContent = `${msg.user}: ${msg.text}`;
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  // Realtime（部屋ごと）
+  function subscribe() {
+    supabase.channel("room-" + ROOM)
+      .on("postgres_changes", {
+        event: "INSERT",
+        schema: "public",
+        table: "messages",
+        filter: `room=eq.${ROOM}`
+      }, payload => {
+        addMessage(payload.new);
+      })
+      .subscribe();
+  }
+</script>
+
+</body>
+</html>

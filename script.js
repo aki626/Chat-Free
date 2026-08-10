@@ -1,7 +1,6 @@
 let ROOM = "";
 
-// Supabase 接続（v2 CDN → グローバル名は supabase）
-const supabase = supabase.createClient(
+const supabase = window.supabase.createClient(
   "https://uxyywwdjctddiuthzlad.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4eXl3d2RqY3RkZGl1dGh6bGFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYzNzE5ODQsImV4cCI6MjEwMTk0Nzk4NH0.dNcQwq7pam-mFixwhKOyZxao_vYdRrpR5PUhYAJFDCY"
 );

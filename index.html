@@ -4,8 +4,9 @@
   <meta charset="UTF-8">
   <title>無料チャット　てすと</title>
 
-　<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  
+  <!-- Supabase v2 CDN -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -38,7 +39,7 @@
   <button id="btn-send">送信</button>
 </div>
 
-<!-- ★ Supabase の後に script.js を読み込む -->
+<!-- ★絶対にこれが必要（src="" になってた原因） -->
 <script src="script.js"></script>
 </body>
 </html>
